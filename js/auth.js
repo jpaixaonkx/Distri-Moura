@@ -1,305 +1,38 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Moura - Controle do Sistema</title>
-    <!-- Fontes e Ícones -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- CSS EMBUTIDO E OTIMIZADO PARA MOBILE & DESKTOP -->
-    <style>
-        :root {
-            --bg-dark: #071022; 
-            --azul-primario: #0044cc;
-            --azul-secundario: #001a4d;
-            --amarelo-moura: #FFCC00;
-            --amarelo-escuro: #ccaa00;
-            --branco: #ffffff;
-            --texto-claro: #e0e7ff;
+// Lógica de Login (Admin / Funcionário)
+async function realizarLogin(email, senha) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('funcionarios')
+            .select('*')
+            .eq('email', email)
+            .eq('senha', senha)
+            .single();
+
+        if (error || !data) {
+            alert('E-mail ou senha incorretos.');
+            return false;
         }
 
-        * {
-            box-sizing: border-box;
+        // Salva os dados da sessão atual no navegador
+        localStorage.setItem('usuario_logado', JSON.stringify(data));
+
+        // Redireciona com base no e-mail master ou tipo de acesso
+        if (data.email === 'Moura@gmail.com') {
+            window.location.href = 'admin.html';
+        } else {
+            window.location.href = 'funcionario.html';
         }
+        return true;
+    } catch (err) {
+        console.error('Erro no login:', err);
+        alert('Erro ao tentar realizar login. Verifique sua conexão.');
+        return false;
+    }
+}
 
-        /* Fundo da Página de Login */
-        body.login-bg {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--azul-secundario) 100%);
-            color: var(--branco);
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow-x: hidden;
-            position: relative;
-            padding: 20px;
-        }
-
-        /* Efeitos de luz no fundo */
-        body.login-bg::before {
-            content: '';
-            position: absolute;
-            top: -20%;
-            left: -10%;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(0, 68, 204, 0.25) 0%, transparent 70%);
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Container Principal */
-        .login-container {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            max-width: 950px;
-            width: 100%;
-            gap: 40px;
-            z-index: 1;
-        }
-
-        /* Lado Esquerdo - Logo */
-        .login-left {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .logo-destaque {
-            max-width: 100%;
-            height: auto;
-            width: 320px;
-            filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
-            animation: floatLogo 4s ease-in-out infinite;
-        }
-
-        @keyframes floatLogo {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-
-        /* Lado Direito - Formulário */
-        .login-right {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-
-        /* Cartão de Login 3D (Efeito Vidro Fosco) */
-        .card-flutuante {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 35px 30px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), inset 0 2px 2px rgba(255, 255, 255, 0.1);
-            transform: perspective(1000px) rotateY(-3deg);
-            transition: transform 0.4s ease;
-        }
-
-        .card-flutuante:hover {
-            transform: perspective(1000px) rotateY(0deg) translateY(-3px);
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .login-header h2 {
-            margin: 0 0 5px 0;
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .login-header p {
-            margin: 0;
-            color: #a3b8cc;
-            font-size: 13px;
-        }
-
-        /* Grupos de Input */
-        .input-group {
-            position: relative;
-            margin-bottom: 18px;
-        }
-
-        .input-group i {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #888;
-            font-size: 16px;
-            transition: color 0.3s ease;
-        }
-
-        .input-group:focus-within i {
-            color: var(--amarelo-moura);
-        }
-
-        /* Inputs 3D */
-        .input-3d {
-            width: 100%;
-            padding: 14px 14px 14px 45px;
-            border-radius: 14px;
-            border: none;
-            background: rgba(0, 0, 0, 0.25);
-            color: var(--branco);
-            font-size: 15px;
-            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.5);
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.3s ease;
-        }
-
-        .input-3d::placeholder {
-            color: #777;
-        }
-
-        .input-3d:focus {
-            outline: none;
-            background: rgba(0, 0, 0, 0.4);
-            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--amarelo-moura);
-        }
-
-        /* Botão 3D */
-        .btn-3d {
-            padding: 14px;
-            border: none;
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            font-family: 'Poppins', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-amarelo {
-            background: linear-gradient(to bottom, var(--amarelo-moura), #e6b800);
-            color: var(--bg-dark);
-            box-shadow: 0 5px 0 var(--amarelo-escuro), 0 12px 20px rgba(0,0,0,0.4);
-        }
-
-        .btn-amarelo:active {
-            transform: translateY(5px);
-            box-shadow: 0 0px 0 var(--amarelo-escuro), 0 4px 10px rgba(0,0,0,0.4);
-        }
-
-        /* --- RESPONSIVIDADE PARA CELULARES --- */
-        @media (max-width: 768px) {
-            body.login-bg {
-                padding: 15px;
-                align-items: flex-start;
-                overflow-y: auto;
-            }
-
-            .login-container {
-                flex-direction: column;
-                gap: 20px;
-                margin-top: 20px;
-                margin-bottom: 20px;
-            }
-
-            .logo-destaque {
-                width: 180px;
-                animation: none;
-            }
-
-            .card-flutuante {
-                transform: none !important;
-                padding: 25px 20px;
-                max-width: 100%;
-                box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-            }
-
-            .login-header h2 {
-                font-size: 22px;
-            }
-
-            .input-3d {
-                font-size: 16px;
-                padding: 12px 12px 12px 42px;
-            }
-        }
-    </style>
-</head>
-<body class="login-bg">
-    <div class="login-container">
-        
-        <div class="login-left">
-            <img src="assets/1000727343.png" alt="Logo Moura" class="logo-destaque">
-        </div>
-
-        <div class="login-right">
-            <div class="card-flutuante">
-                <div class="login-header">
-                    <i class="fas fa-lock" style="font-size: 2rem; color: var(--amarelo-moura); margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.4));"></i>
-                    <h2>Portal de Acesso</h2>
-                    <p>Faça login para gerenciar a distribuidora</p>
-                </div>
-                
-                <form id="form-login">
-                    <div class="input-group">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" id="email" class="input-3d" placeholder="E-mail de acesso" required>
-                    </div>
-                    <div class="input-group">
-                        <i class="fas fa-key"></i>
-                        <input type="password" id="senha" class="input-3d" placeholder="Senha" required>
-                    </div>
-                    <button type="submit" class="btn-3d btn-amarelo" style="width: 100%; margin-top: 10px;">
-                        Autenticar <i class="fas fa-arrow-right"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-        
-    </div>
-
-    <!-- Scripts do Supabase e Lógica do Sistema -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase.js"></script>
-    <script src="js/auth.js"></script>
-
-    <!-- Script de inicialização do evento de login -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const formLogin = document.getElementById('form-login');
-            if (formLogin) {
-                formLogin.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-
-                    const emailInput = document.getElementById('email').value.trim();
-                    const senhaInput = document.getElementById('senha').value.trim();
-
-                    if (!emailInput || !senhaInput) {
-                        alert('Por favor, preencha o e-mail e a senha.');
-                        return;
-                    }
-
-                    // Executa a função de autenticação do auth.js
-                    await realizarLogin(emailInput, senhaInput);
-                });
-            }
-        });
-    </script>
-</body>
-</html>
+function verificarSessao() {
+    const usuario = localStorage.getItem('usuario_logado');
+    if (!usuario) {
+        window.location.href = 'index.html';
+    }
+}
