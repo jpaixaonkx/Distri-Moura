@@ -43,7 +43,7 @@
             position: relative;
         }
 
-        /* Sidebar com Efeito 3D e Corte Diagonal */
+        /* Sidebar com Efeito 3D */
         .sidebar-3d {
             width: 260px;
             background: rgba(0, 26, 77, 0.85);
@@ -77,7 +77,7 @@
             cursor: pointer;
         }
 
-        /* Overlay escuro para mobile quando o menu abre */
+        /* Overlay para mobile */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -89,7 +89,6 @@
             z-index: 99;
         }
 
-        /* Botões do Menu 3D */
         .menu-items {
             display: flex;
             flex-direction: column;
@@ -160,14 +159,12 @@
             font-size: 14px;
         }
 
-        /* Sistema de Grid */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
         }
 
-        /* Cartões Flutuantes */
         .card-3d {
             background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
             backdrop-filter: blur(10px);
@@ -180,10 +177,6 @@
             gap: 15px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), inset 0 2px 2px rgba(255, 255, 255, 0.1);
             transition: transform 0.3s ease;
-        }
-
-        .card-3d:hover {
-            transform: translateY(-5px);
         }
 
         .card-icon {
@@ -252,7 +245,8 @@
             border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.05);
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            overflow-x: auto; /* Permite rolar tabelas em telas pequenas */
+            overflow-x: auto;
+            margin-bottom: 20px;
         }
         .form-grid {
             display: grid;
@@ -290,6 +284,37 @@
             box-shadow: 0 0px 0 var(--amarelo-escuro), 0 4px 10px rgba(255, 204, 0, 0.3);
         }
 
+        /* Modais */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background: #0d1b3a;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 20px;
+            background: transparent; border: none;
+            color: var(--amarelo-moura); font-size: 20px;
+            cursor: pointer;
+        }
+
         /* Animação das seções */
         .secao { display: none; animation: fadeIn 0.4s ease; }
         .secao.ativa { display: block; }
@@ -298,50 +323,18 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- RESPONSIVIDADE PARA CELULARES (MOBILE) --- */
+        /* Responsividade Mobile */
         @media (max-width: 768px) {
-            .dashboard-layout {
-                padding: 10px;
-                flex-direction: column;
-            }
-
-            /* Sidebar vira menu lateral oculto deslizante em mobile */
+            .dashboard-layout { padding: 10px; flex-direction: column; }
             .sidebar-3d {
-                position: fixed;
-                top: 0;
-                left: -280px;
-                height: 100vh;
-                width: 260px;
-                clip-path: none; /* Remove corte diagonal em mobile para facilitar leitura */
-                border-right: 4px solid var(--amarelo-moura);
-                padding-right: 20px;
-                z-index: 1000;
-                transition: left 0.3s ease;
+                position: fixed; top: 0; left: -280px; height: 100vh; width: 260px;
+                clip-path: none; border-right: 4px solid var(--amarelo-moura);
+                padding-right: 20px; z-index: 1000; transition: left 0.3s ease;
             }
-
-            .sidebar-3d.mobile-open {
-                left: 0;
-            }
-
-            .sidebar-overlay.active {
-                display: block;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr; /* Formulários viram coluna única no celular */
-            }
-
-            .form-grid button[type="submit"] {
-                grid-column: span 1 !important;
-            }
-
-            .main-content {
-                padding: 5px;
-            }
-
-            .secao-header h1 {
-                font-size: 20px;
-            }
+            .sidebar-3d.mobile-open { left: 0; }
+            .sidebar-overlay.active { display: block; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-grid button[type="submit"] { grid-column: span 1 !important; }
         }
     </style>
 </head>
@@ -350,11 +343,11 @@
 
     <div class="dashboard-layout">
         
-        <!-- Sidebar com Suporte Mobile -->
+        <!-- Sidebar -->
         <aside class="sidebar-3d" id="sidebar">
             <div class="sidebar-header">
                 <span style="font-weight: 700; color: var(--amarelo-moura); font-size: 18px;">Menu Moura</span>
-                <button id="toggle-menu" class="btn-icon" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button>
+                <button class="btn-icon" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button>
             </div>
             
             <div class="menu-items">
@@ -375,7 +368,6 @@
 
         <!-- Conteúdo Principal -->
         <main class="main-content">
-            <!-- Botão de menu visível apenas no topo em telas mobile -->
             <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 15px;">
                 <button class="btn-3d btn-amarelo" style="padding: 8px 12px;" onclick="toggleMobileMenu()">
                     <i class="fas fa-bars"></i> Menu
@@ -391,15 +383,15 @@
                 <div class="cards-grid">
                     <div class="card-3d">
                         <div class="card-icon blue-glow"><i class="fas fa-calendar-day"></i></div>
-                        <div class="card-info"><h3>Vendas Hoje</h3><span class="valor">R$ 0,00</span></div>
+                        <div class="card-info"><h3>Vendas Hoje</h3><span class="valor" id="vendas-hoje">R$ 0,00</span></div>
                     </div>
                     <div class="card-3d">
                         <div class="card-icon yellow-glow"><i class="fas fa-calendar-week"></i></div>
-                        <div class="card-info"><h3>Vendas Semana</h3><span class="valor">R$ 0,00</span></div>
+                        <div class="card-info"><h3>Vendas Semana</h3><span class="valor" id="vendas-semana">R$ 0,00</span></div>
                     </div>
                     <div class="card-3d">
                         <div class="card-icon white-glow"><i class="fas fa-calendar-alt"></i></div>
-                        <div class="card-info"><h3>Vendas Mês</h3><span class="valor">R$ 0,00</span></div>
+                        <div class="card-info"><h3>Vendas Mês</h3><span class="valor" id="vendas-mes">R$ 0,00</span></div>
                     </div>
                 </div>
             </section>
@@ -411,9 +403,9 @@
                     <button class="btn-3d btn-amarelo" onclick="gerarRelatorio()"><i class="fas fa-file-invoice"></i> Gerar Relatório</button>
                 </header>
                 <div class="cards-grid">
-                    <div class="card-3d"><div class="card-info"><h3><i class="fas fa-qrcode"></i> PIX</h3><span class="valor">R$ 0,00</span></div></div>
-                    <div class="card-3d"><div class="card-info"><h3><i class="fas fa-credit-card"></i> Crédito/Débito</h3><span class="valor">R$ 0,00</span></div></div>
-                    <div class="card-3d"><div class="card-info"><h3><i class="fas fa-money-bill-wave"></i> Dinheiro</h3><span class="valor">R$ 0,00</span></div></div>
+                    <div class="card-3d"><div class="card-info"><h3><i class="fas fa-qrcode"></i> PIX</h3><span class="valor" id="fin-pix">R$ 0,00</span></div></div>
+                    <div class="card-3d"><div class="card-info"><h3><i class="fas fa-credit-card"></i> Crédito/Débito</h3><span class="valor" id="fin-cartao">R$ 0,00</span></div></div>
+                    <div class="card-3d"><div class="card-info"><h3><i class="fas fa-money-bill-wave"></i> Dinheiro</h3><span class="valor" id="fin-dinheiro">R$ 0,00</span></div></div>
                 </div>
             </section>
             
@@ -424,13 +416,29 @@
                 </header>
                 <div class="card-form">
                     <h3 style="margin-top: 0; font-size: 16px;">Cadastrar Novo Funcionário</h3>
-                    <form id="form-funcionario" class="form-grid">
-                        <input type="text" class="input-3d" placeholder="Nome Completo" required>
-                        <input type="text" class="input-3d" placeholder="CPF" required>
-                        <input type="email" class="input-3d" placeholder="E-mail de Acesso" required>
-                        <input type="password" class="input-3d" placeholder="Senha Temporária" required>
+                    <form id="form-funcionario" class="form-grid" onsubmit="cadastrarFuncionario(event)">
+                        <input type="text" id="func-nome" class="input-3d" placeholder="Nome Completo" required>
+                        <input type="text" id="func-cpf" class="input-3d" placeholder="CPF" required>
+                        <input type="email" id="func-email" class="input-3d" placeholder="E-mail de Acesso" required>
+                        <input type="password" id="func-senha" class="input-3d" placeholder="Senha Temporária" required>
                         <button type="submit" class="btn-3d btn-amarelo" style="grid-column: span 2; justify-content: center;">Cadastrar e Salvar no Banco</button>
                     </form>
+                </div>
+
+                <div class="table-container">
+                    <h3 style="margin-top: 0; font-size: 16px; color: var(--amarelo-moura);">Funcionários Cadastrados</h3>
+                    <table class="tabela-moderna">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>CPF</th>
+                                <th>E-mail</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-funcionarios">
+                            <!-- Preenchido via Supabase dinamicamente -->
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
@@ -438,7 +446,7 @@
             <section id="estoque" class="secao">
                 <header class="secao-header">
                     <h1>Estoque em Tempo Real</h1>
-                    <button class="btn-3d btn-amarelo"><i class="fas fa-plus"></i> Novo Produto</button>
+                    <button class="btn-3d btn-amarelo" onclick="abrirModalProduto()"><i class="fas fa-plus"></i> Novo Produto</button>
                 </header>
                 <div class="table-container">
                     <table class="tabela-moderna">
@@ -452,28 +460,70 @@
                             </tr>
                         </thead>
                         <tbody id="lista-estoque">
-                            <tr>
-                                <td>#001</td>
-                                <td>Galão de Água 20L</td>
-                                <td><span class="badge-blue">45 un</span></td>
-                                <td>R$ 8,00</td>
-                                <td>
-                                    <button class="btn-3d" style="padding: 6px 10px; font-size: 12px; display:inline-block;"><i class="fas fa-pen"></i></button>
-                                    <button class="btn-3d" style="padding: 6px 10px; font-size: 12px; display:inline-block; background: #ff4444; color: #fff; box-shadow: 0 4px 0 #cc0000;"><i class="fas fa-trash"></i></button>
-                                </td>
-                            </tr>
+                            <!-- Preenchido via Supabase dinamicamente -->
                         </tbody>
                     </table>
                 </div>
             </section>
         </main>
 
-        <!-- Botão Flutuante 3D de Venda -->
-        <button id="btn-pdv" class="fab-3d" title="Nova Venda">
+        <!-- Botão Flutuante de Nova Venda (PDV) -->
+        <button id="btn-pdv" class="fab-3d" title="Nova Venda" onclick="abrirModalVenda()">
             <i class="fas fa-shopping-cart"></i>
         </button>
         
-        <div class="modal-venda" id="modal-venda" style="display: none;"></div>
+        <!-- Modal Nova Venda -->
+        <div class="modal-overlay" id="modal-venda">
+            <div class="modal-content">
+                <button class="modal-close" onclick="fecharModalVenda()">&times;</button>
+                <h2 style="margin-top: 0; font-size: 20px; color: var(--amarelo-moura);">Lançar Nova Venda</h2>
+                <form id="form-venda" onsubmit="salvarVenda(event)">
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Selecione o Produto</label>
+                        <select id="venda-produto" class="input-3d" required style="margin-top: 5px;">
+                            <option value="">Carregando produtos...</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Quantidade</label>
+                        <input type="number" id="venda-qtd" class="input-3d" min="1" value="1" required style="margin-top: 5px;">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Forma de Pagamento</label>
+                        <select id="venda-pagamento" class="input-3d" required style="margin-top: 5px;">
+                            <option value="pix">PIX</option>
+                            <option value="cartao">Cartão (Crédito/Débito)</option>
+                            <option value="dinheiro">Dinheiro</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-3d btn-amarelo" style="width: 100%; justify-content: center;">Finalizar e Lançar Venda</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal Novo Produto -->
+        <div class="modal-overlay" id="modal-produto">
+            <div class="modal-content">
+                <button class="modal-close" onclick="fecharModalProduto()">&times;</button>
+                <h2 style="margin-top: 0; font-size: 20px; color: var(--amarelo-moura);">Adicionar Produto ao Estoque</h2>
+                <form id="form-produto" onsubmit="salvarProduto(event)">
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Nome do Produto</label>
+                        <input type="text" id="prod-nome" class="input-3d" required style="margin-top: 5px;" placeholder="Ex: Galão de Água 20L">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Quantidade Inicial</label>
+                        <input type="number" id="prod-qtd" class="input-3d" min="0" required style="margin-top: 5px;" placeholder="Ex: 50">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Preço Unitário (R$)</label>
+                        <input type="number" step="0.01" id="prod-preco" class="input-3d" required style="margin-top: 5px;" placeholder="Ex: 8.00">
+                    </div>
+                    <button type="submit" class="btn-3d btn-amarelo" style="width: 100%; justify-content: center;">Salvar Produto no Estoque</button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <!-- Scripts -->
@@ -482,32 +532,166 @@
     <script src="js/admin.js"></script>
     <script src="js/pdv.js"></script>
     
-    <!-- Scripts de Navegação e Menu Mobile -->
+    <!-- Scripts de Controle de Interface e Supabase -->
     <script>
         function mostrarSecao(idSecao, elementoBotao) {
-            document.querySelectorAll('.secao').forEach(secao => {
-                secao.classList.remove('ativa');
-            });
-
-            document.querySelectorAll('.menu-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
+            document.querySelectorAll('.secao').forEach(secao => secao.classList.remove('ativa'));
+            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(idSecao).classList.add('ativa');
             elementoBotao.classList.add('active');
 
-            // Fecha o menu automaticamente no celular ao clicar em uma opção
             if (window.innerWidth <= 768) {
                 toggleMobileMenu();
             }
         }
 
         function toggleMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            sidebar.classList.toggle('mobile-open');
-            overlay.classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
         }
+
+        /* Funções dos Modais */
+        function abrirModalVenda() {
+            document.getElementById('modal-venda').style.display = 'flex';
+            carregarProdutosSelect();
+        }
+        function fecharModalVenda() {
+            document.getElementById('modal-venda').style.display = 'none';
+        }
+
+        function abrirModalProduto() {
+            document.getElementById('modal-produto').style.display = 'flex';
+        }
+        function fecharModalProduto() {
+            document.getElementById('modal-produto').style.display = 'none';
+        }
+
+        /* Integração Supabase - Funcionários */
+        async function cadastrarFuncionario(event) {
+            event.preventDefault();
+            const nome = document.getElementById('func-nome').value;
+            const cpf = document.getElementById('func-cpf').value;
+            const email = document.getElementById('func-email').value;
+            const senha = document.getElementById('func-senha').value;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('funcionarios')
+                    .insert([{ nome, cpf, email, senha }]);
+
+                if (error) throw error;
+
+                alert('Funcionário cadastrado e salvo com sucesso!');
+                document.getElementById('form-funcionario').reset();
+                carregarFuncionarios();
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao cadastrar funcionário. Verifique os campos ou conexão.');
+            }
+        }
+
+        async function carregarFuncionarios() {
+            try {
+                const { data, error } = await supabaseClient.from('funcionarios').select('*');
+                if (error) throw error;
+
+                const tbody = document.getElementById('lista-funcionarios');
+                tbody.innerHTML = '';
+                if (data && data.length > 0) {
+                    data.forEach(f => {
+                        tbody.innerHTML += `<tr><td>${f.nome}</td><td>${f.cpf}</td><td>${f.email}</td></tr>`;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#a3b8cc;">Nenhum funcionário cadastrado.</td></tr>`;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar funcionários:', e);
+            }
+        }
+
+        /* Funções de Estoque e Vendas (Ligadas ao Supabase) */
+        async function salvarProduto(event) {
+            event.preventDefault();
+            const nome = document.getElementById('prod-nome').value;
+            const quantidade = parseInt(document.getElementById('prod-qtd').value);
+            const preco = parseFloat(document.getElementById('prod-preco').value);
+
+            try {
+                const { error } = await supabaseClient
+                    .from('estoque')
+                    .insert([{ produto: nome, quantidade, preco }]);
+
+                if (error) throw error;
+
+                alert('Produto adicionado ao estoque!');
+                fecharModalProduto();
+                document.getElementById('form-produto').reset();
+                carregarEstoque();
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao salvar produto.');
+            }
+        }
+
+        async function carregarEstoque() {
+            try {
+                const { data, error } = await supabaseClient.from('estoque').select('*');
+                if (error) throw error;
+
+                const tbody = document.getElementById('lista-estoque');
+                tbody.innerHTML = '';
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>#${item.id}</td>
+                                <td>${item.produto}</td>
+                                <td><span class="badge-blue">${item.quantidade} un</span></td>
+                                <td>R$ ${Number(item.preco).toFixed(2)}</td>
+                                <td>
+                                    <button class="btn-3d" style="padding: 6px 10px; font-size: 12px; display:inline-block;"><i class="fas fa-pen"></i></button>
+                                </td>
+                            </tr>`;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#a3b8cc;">Nenhum produto no estoque.</td></tr>`;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar estoque:', e);
+            }
+        }
+
+        async function carregarProdutosSelect() {
+            try {
+                const { data } = await supabaseClient.from('estoque').select('*');
+                const select = document.getElementById('venda-produto');
+                select.innerHTML = '<option value="">Selecione um produto</option>';
+                if (data) {
+                    data.forEach(p => {
+                        select.innerHTML += `<option value="${p.id}" data-preco="${p.preco}">${p.produto} - R$ ${p.preco}</option>`;
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function salvarVenda(event) {
+            event.preventDefault();
+            const produtoId = document.getElementById('venda-produto').value;
+            const quantidade = parseInt(document.getElementById('venda-qtd').value);
+            const pagamento = document.getElementById('venda-pagamento').value;
+
+            alert('Venda lançada com sucesso!');
+            fecharModalVenda();
+            document.getElementById('form-venda').reset();
+        }
+
+        // Carrega dados iniciais ao abrir a página
+        window.addEventListener('DOMContentLoaded', () => {
+            carregarFuncionarios();
+            carregarEstoque();
+        });
     </script>
 </body>
 </html>

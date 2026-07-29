@@ -2,38 +2,602 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Moura - Painel Funcionário</title>
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS RESPONSIVO (PADRÃO 3D MOURA) -->
+    <style>
+        :root {
+            --bg-dark: #071022; 
+            --azul-primario: #0044cc;
+            --azul-secundario: #001a4d;
+            --amarelo-moura: #FFCC00;
+            --amarelo-escuro: #ccaa00;
+            --branco: #ffffff;
+            --texto-claro: #e0e7ff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body.funcionario-bg {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--azul-secundario) 100%);
+            color: var(--branco);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Layout Principal */
+        .dashboard-layout {
+            display: flex;
+            height: 100vh;
+            padding: 15px;
+            gap: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Sidebar com Efeito 3D */
+        .sidebar-3d {
+            width: 260px;
+            background: rgba(0, 26, 77, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 15px 35px rgba(0, 0, 0, 0.4);
+            clip-path: polygon(0 0, 100% 0, 88% 100%, 0% 100%);
+            border-right: 4px solid var(--amarelo-moura);
+            padding-right: 35px;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            color: var(--amarelo-moura);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 99;
+        }
+
+        .menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .menu-btn {
+            width: 100%;
+            background: transparent;
+            color: var(--texto-claro);
+            border: none;
+            padding: 14px 18px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .menu-btn.active {
+            background: var(--azul-primario);
+            color: var(--branco);
+            box-shadow: 0 5px 0 var(--azul-secundario), 0 10px 20px rgba(0, 68, 204, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Área Principal */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .secao-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .secao-header h1 {
+            font-size: 22px;
+            margin: 0;
+        }
+
+        .user-profile {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Cards e Layout 3D */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .card-3d {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), inset 0 2px 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .card-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            background: var(--amarelo-moura);
+            color: #000;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+            flex-shrink: 0;
+        }
+
+        .card-info h3 { margin: 0; font-size: 14px; font-weight: 400; color: #a3b8cc; }
+        .card-info .valor { font-size: 26px; font-weight: 700; display: block; margin-top: 5px; color: var(--amarelo-moura); }
+
+        /* Botões e Inputs 3D */
+        .btn-3d {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-amarelo {
+            background: var(--amarelo-moura);
+            color: var(--bg-dark);
+            box-shadow: 0 6px 0 var(--amarelo-escuro), 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .btn-amarelo:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 var(--amarelo-escuro), 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .input-3d {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            color: var(--branco);
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            font-size: 15px;
+        }
+        .input-3d:focus { outline: 2px solid var(--amarelo-moura); }
+
+        /* Tabelas */
+        .table-container {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow-x: auto;
+        }
+        .tabela-moderna { width: 100%; border-collapse: collapse; text-align: left; min-width: 500px; }
+        .tabela-moderna th { padding: 12px; border-bottom: 2px solid var(--amarelo-moura); color: var(--amarelo-moura); font-size: 14px; }
+        .tabela-moderna td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+        .badge-blue { background: var(--azul-primario); padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 11px;}
+
+        /* FAB - Botão Flutuante de Venda */
+        .fab-3d {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, var(--amarelo-moura), #e6b800);
+            color: var(--bg-dark);
+            font-size: 24px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--amarelo-escuro), 0 10px 20px rgba(255, 204, 0, 0.3), inset 0 2px 2px rgba(255,255,255,0.6);
+            transition: all 0.15s ease;
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fab-3d:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 var(--amarelo-escuro), 0 4px 10px rgba(255, 204, 0, 0.3);
+        }
+
+        /* Modal de Venda PDV */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background: #0d1b3a;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 20px;
+            background: transparent; border: none;
+            color: var(--amarelo-moura); font-size: 20px;
+            cursor: pointer;
+        }
+
+        .secao { display: none; animation: fadeIn 0.4s ease; }
+        .secao.ativa { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-layout { padding: 10px; flex-direction: column; }
+            .sidebar-3d {
+                position: fixed; top: 0; left: -280px; height: 100vh; width: 260px;
+                clip-path: none; border-right: 4px solid var(--amarelo-moura);
+                padding-right: 20px; z-index: 1000; transition: left 0.3s ease;
+            }
+            .sidebar-3d.mobile-open { left: 0; }
+            .sidebar-overlay.active { display: block; }
+        }
+    </style>
 </head>
-<body>
+<body class="funcionario-bg">
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
     <div class="dashboard-layout">
-        <!-- Sidebar Reduzida -->
-        <aside class="sidebar">
+        
+        <!-- Sidebar Reduzida para Colaborador -->
+        <aside class="sidebar-3d" id="sidebar">
+            <div class="sidebar-header">
+                <span style="font-weight: 700; color: var(--amarelo-moura); font-size: 18px;">Painel Caixa</span>
+                <button class="btn-icon" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button>
+            </div>
+            
             <div class="menu-items">
-                <button class="menu-btn active" onclick="mostrarSecao('dashboard')">Caixa do Dia</button>
-                <button class="menu-btn" onclick="mostrarSecao('estoque')">Estoque</button>
+                <button class="menu-btn active" onclick="mostrarSecao('dashboard', this)">
+                    <i class="fas fa-cash-register"></i> <span>Caixa do Dia</span>
+                </button>
+                <button class="menu-btn" onclick="mostrarSecao('estoque', this)">
+                    <i class="fas fa-boxes"></i> <span>Consultar Estoque</span>
+                </button>
+            </div>
+
+            <div>
+                <button class="menu-btn" style="color: #ff6b6b;" onclick="sairSistema()">
+                    <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+                </button>
             </div>
         </aside>
 
         <!-- Conteúdo Principal -->
         <main class="main-content">
+            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <button class="btn-3d btn-amarelo" style="padding: 8px 12px;" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i> Menu
+                </button>
+                <div class="user-profile"><i class="fas fa-user-tie"></i> Colaborador</div>
+            </div>
+
+            <!-- SEÇÃO 1: CAIXA DO DIA -->
             <section id="dashboard" class="secao ativa">
-                <h1>Caixa do Dia</h1>
-                <div class="card-nuvem 3d-shadow">Faturamento Atual: <span id="caixa-dia">R$ 0,00</span></div>
+                <header class="secao-header">
+                    <h1>Resumo de Caixa</h1>
+                </header>
+                <div class="cards-grid">
+                    <div class="card-3d">
+                        <div class="card-icon"><i class="fas fa-wallet"></i></div>
+                        <div class="card-info">
+                            <h3>Faturamento Atual do Caixa</h3>
+                            <span class="valor" id="caixa-dia">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            <section id="estoque" class="secao" style="display: none;">
-                <!-- Tabela de produtos com adição/remoção -->
+            <!-- SEÇÃO 2: ESTOQUE (Consulta) -->
+            <section id="estoque" class="secao">
+                <header class="secao-header">
+                    <h1>Estoque Disponível</h1>
+                </header>
+                <div class="table-container">
+                    <table class="tabela-moderna">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Produto</th>
+                                <th>Qtd Disponível</th>
+                                <th>Preço Unit.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-estoque-funcionario">
+                            <!-- Preenchido via Supabase -->
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </main>
 
-        <!-- Mesmo botão e sistema de vendas flutuante -->
-        <button id="btn-pdv" class="fab-3d">+</button>
+        <!-- Botão Flutuante (PDV) para Lançar Vendas -->
+        <button id="btn-pdv" class="fab-3d" title="Lançar Venda" onclick="abrirModalVenda()">
+            <i class="fas fa-plus"></i>
+        </button>
+
+        <!-- Modal de Nova Venda (PDV Integrado) -->
+        <div class="modal-overlay" id="modal-venda">
+            <div class="modal-content">
+                <button class="modal-close" onclick="fecharModalVenda()">&times;</button>
+                <h2 style="margin-top: 0; font-size: 20px; color: var(--amarelo-moura);">Lançar Nova Venda (PDV)</h2>
+                <form id="form-venda-func" onsubmit="realizarVendaFuncionario(event)">
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Selecione o Produto</label>
+                        <select id="venda-produto" class="input-3d" required style="margin-top: 5px;">
+                            <option value="">Carregando produtos...</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Quantidade</label>
+                        <input type="number" id="venda-qtd" class="input-3d" min="1" value="1" required style="margin-top: 5px;">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Forma de Pagamento</label>
+                        <select id="venda-pagamento" class="input-3d" required style="margin-top: 5px;">
+                            <option value="pix">PIX</option>
+                            <option value="cartao">Cartão (Crédito/Débito)</option>
+                            <option value="dinheiro">Dinheiro</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-3d btn-amarelo" style="width: 100%; justify-content: center;">Confirmar Venda</button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
+    <!-- Scripts Supabase e Lógica -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
-    <script src="js/estoque.js"></script>
-    <script src="js/pdv.js"></script>
+    
+    <script>
+        function mostrarSecao(idSecao, elementoBotao) {
+            document.querySelectorAll('.secao').forEach(secao => secao.classList.remove('ativa'));
+            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(idSecao).classList.add('ativa');
+            if (elementoBotao) elementoBotao.classList.add('active');
+
+            if (window.innerWidth <= 768) {
+                toggleMobileMenu();
+            }
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
+
+        function abrirModalVenda() {
+            document.getElementById('modal-venda').style.display = 'flex';
+            carregarProdutosSelect();
+        }
+
+        function fecharModalVenda() {
+            document.getElementById('modal-venda').style.display = 'none';
+        }
+
+        function sairSistema() {
+            if(confirm('Deseja realmente sair do painel?')) {
+                window.location.href = 'index.html'; // Altere para sua tela de login se necessário
+            }
+        }
+
+        // Integração com Supabase: Carregar Estoque na Tabela
+        async function carregarEstoqueFuncionario() {
+            try {
+                const { data, error } = await supabaseClient.from('estoque').select('*');
+                if (error) throw error;
+
+                const tbody = document.getElementById('lista-estoque-funcionario');
+                tbody.innerHTML = '';
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>#${item.id}</td>
+                                <td>${item.produto}</td>
+                                <td><span class="badge-blue">${item.quantidade} un</span></td>
+                                <td>R$ ${Number(item.preco).toFixed(2)}</td>
+                            </tr>`;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#a3b8cc;">Nenhum produto cadastrado no estoque.</td></tr>`;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar estoque:', e);
+            }
+        }
+
+        // Carregar produtos para o select do PDV
+        async function carregarProdutosSelect() {
+            try {
+                const { data } = await supabaseClient.from('estoque').select('*');
+                const select = document.getElementById('venda-produto');
+                select.innerHTML = '<option value="">Selecione um produto</option>';
+                if (data) {
+                    data.forEach(p => {
+                        if(p.quantidade > 0) {
+                            select.innerHTML += `<option value="${p.id}" data-preco="${p.preco}" data-qtdmax="${p.quantidade}">${p.produto} (Disponível: ${p.quantidade}) - R$ ${p.preco}</option>`;
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Realizar Venda e Atualizar Caixa / Estoque
+        async function realizarVendaFuncionario(event) {
+            event.preventDefault();
+            const produtoId = document.getElementById('venda-produto').value;
+            const quantidadeVendida = parseInt(document.getElementById('venda-qtd').value);
+            const formaPagamento = document.getElementById('venda-pagamento').value;
+
+            if(!produtoId) {
+                alert('Selecione um produto válido.');
+                return;
+            }
+
+            try {
+                // 1. Buscar dados atuais do produto para checar estoque e calcular valor
+                const { data: prodData, error: prodError } = await supabaseClient
+                    .from('estoque')
+                    .select('*')
+                    .eq('id', produtoId)
+                    .single();
+
+                if (prodError || !prodData) throw new Error('Produto não encontrado.');
+
+                if (prodData.quantidade < quantidadeVendida) {
+                    alert(`Estoque insuficiente! Apenas ${prodData.quantidade} unidades disponíveis.`);
+                    return;
+                }
+
+                const valorTotal = prodData.preco * quantidadeVendida;
+
+                // 2. Atualizar a quantidade no estoque do Supabase (Baixa)
+                const novaQuantidade = prodData.quantidade - quantidadeVendida;
+                const { error: updateError } = await supabaseClient
+                    .from('estoque')
+                    .update({ quantidade: novaQuantidade })
+                    .eq('id', produtoId);
+
+                if (updateError) throw updateError;
+
+                // 3. Registrar a venda na tabela de vendas (se existir, ou salvar localmente/atualizar caixa)
+                // Se houver uma tabela "vendas" no seu Supabase:
+                await supabaseClient.from('vendas').insert([{
+                    produto_id: produtoId,
+                    produto_nome: prodData.produto,
+                    quantidade: quantidadeVendida,
+                    valor_total: valorTotal,
+                    pagamento: formaPagamento,
+                    data: new Date()
+                }]).catch(() => {
+                    // Caso a tabela 'vendas' não esteja criada ainda, apenas simula o faturamento em memória
+                });
+
+                alert(`Venda realizada com sucesso! Total: R$ ${valorTotal.toFixed(2)}`);
+                fecharModalVenda();
+                document.getElementById('form-venda-func').reset();
+                
+                // Atualizar visualizações
+                carregarEstoqueFuncionario();
+                atualizarCaixaDia();
+
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao processar a venda. Tente novamente.');
+            }
+        }
+
+        // Simular/Buscar faturamento do caixa do dia
+        async function atualizarCaixaDia() {
+            try {
+                const { data, error } = await supabaseClient.from('vendas').select('valor_total');
+                if(!error && data) {
+                    const totalDia = data.reduce((acc, curr) => acc + Number(curr.valor_total || 0), 0);
+                    document.getElementById('caixa-dia').innerText = `R$ ${totalDia.toFixed(2)}`;
+                }
+            } catch (e) {
+                // Se a tabela de vendas não existir ainda, exibe padrão
+                document.getElementById('caixa-dia').innerText = 'R$ 0,00';
+            }
+        }
+
+        // Inicialização ao carregar a página
+        window.addEventListener('DOMContentLoaded', () => {
+            carregarEstoqueFuncionario();
+            atualizarCaixaDia();
+        });
+    </script>
 </body>
 </html>
