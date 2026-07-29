@@ -1,54 +1,38 @@
-// js/auth.js
+// Lógica de Login (Admin / Funcionário)
+async function realizarLogin(email, senha) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('funcionarios')
+            .select('*')
+            .eq('email', email)
+            .eq('senha', senha)
+            .single();
 
-document.addEventListener('DOMContentLoaded', () => {
-    const formLogin = document.getElementById('form-login');
+        if (error || !data) {
+            alert('E-mail ou senha incorretos.');
+            return false;
+        }
 
-    if (formLogin) {
-        formLogin.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Evita que a página recarregue
-            
-            // Pega os valores dos inputs (com o design 3D que criamos)
-            const email = document.getElementById('email').value;
-            const senha = document.getElementById('senha').value;
-            const btnSubmit = formLogin.querySelector('button');
+        // Salva os dados da sessão atual no navegador
+        localStorage.setItem('usuario_logado', JSON.stringify(data));
 
-            // Feedback visual no botão
-            btnSubmit.textContent = 'Carregando...';
-            btnSubmit.disabled = true;
-
-            try {
-                // 1. Tenta fazer o login via Supabase Auth
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: senha,
-                });
-
-                if (error) throw error;
-
-                // 2. Busca o perfil do usuário para saber se é Admin ou Funcionário
-                const { data: perfilData, error: perfilError } = await supabase
-                    .from('perfis')
-                    .select('cargo')
-                    .eq('id', data.user.id)
-                    .single();
-
-                if (perfilError) throw perfilError;
-
-                // 3. Redireciona de acordo com o cargo
-                if (perfilData.cargo === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'funcionario.html';
-                }
-
-            } catch (error) {
-                console.error('Erro de autenticação:', error.message);
-                alert('Erro ao fazer login: E-mail ou senha incorretos.');
-            } finally {
-                // Restaura o botão
-                btnSubmit.textContent = 'Entrar';
-                btnSubmit.disabled = false;
-            }
-        });
+        // Redireciona com base no tipo ou e-mail (Admin Master)
+        if (data.email === 'admin@moura.com') {
+            window.location.href = 'admin.html';
+        } else {
+            window.location.href = 'funcionario.html';
+        }
+        return true;
+    } catch (err) {
+        console.error('Erro no login:', err);
+        alert('Erro ao tentar realizar login. Verifique sua conexão.');
+        return false;
     }
-});
+}
+
+function verificarSessao() {
+    const usuario = localStorage.getItem('usuario_logado');
+    if (!usuario) {
+        window.location.href = 'index.html'; // Redireciona para o login se não autenticado
+    }
+}
