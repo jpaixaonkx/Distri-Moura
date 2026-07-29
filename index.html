@@ -203,11 +203,11 @@
             box-shadow: 0 0px 0 var(--amarelo-escuro), 0 4px 10px rgba(0,0,0,0.4);
         }
 
-        /* --- RESPONSIVIDADE PARA CELULARES (MOBILE FIRST / TELAS MENORES) --- */
+        /* --- RESPONSIVIDADE PARA CELULARES --- */
         @media (max-width: 768px) {
             body.login-bg {
                 padding: 15px;
-                align-items: flex-start; /* Permite rolar caso o teclado abra no celular */
+                align-items: flex-start;
                 overflow-y: auto;
             }
 
@@ -219,8 +219,8 @@
             }
 
             .logo-destaque {
-                width: 180px; /* Logo menor e proporcional em celulares */
-                animation: none; /* Desativa animação em mobile para melhor performance */
+                width: 180px;
+                animation: none;
             }
 
             .card-flutuante {
@@ -235,7 +235,7 @@
             }
 
             .input-3d {
-                font-size: 16px; /* Evita zoom automático indesejado no iOS/Android */
+                font-size: 16px;
                 padding: 12px 12px 12px 42px;
             }
         }
@@ -274,8 +274,22 @@
         
     </div>
 
+    <!-- Scripts do Supabase e Lógica do Sistema -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script src="js/auth.js"></script>
+
+    <!-- Script para interagir com o formulário de login e disparar a validação do banco -->
+    <script>
+        document.getElementById('form-login').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Evita o recarregamento padrão da página
+
+            const emailInput = document.getElementById('email').value;
+            const senhaInput = document.getElementById('senha').value;
+
+            // Chama a função realizarLogin() que está dentro do arquivo js/auth.js
+            await realizarLogin(emailInput, senhaInput);
+        });
+    </script>
 </body>
 </html>
