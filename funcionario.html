@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Moura - Painel Funcionário</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar Reduzida -->
+        <aside class="sidebar">
+            <div class="menu-items">
+                <button class="menu-btn active" onclick="mostrarSecao('dashboard')">Caixa do Dia</button>
+                <button class="menu-btn" onclick="mostrarSecao('estoque')">Estoque</button>
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <section id="dashboard" class="secao ativa">
+                <h1>Caixa do Dia</h1>
+                <div class="card-nuvem 3d-shadow">Faturamento Atual: <span id="caixa-dia">R$ 0,00</span></div>
+            </section>
+
+            <section id="estoque" class="secao" style="display: none;">
+                <!-- Tabela de produtos com adição/remoção -->
+            </section>
+        </main>
+
+        <!-- Mesmo botão e sistema de vendas flutuante -->
+        <button id="btn-pdv" class="fab-3d">+</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/estoque.js"></script>
+    <script src="js/pdv.js"></script>
+</body>
+</html>
