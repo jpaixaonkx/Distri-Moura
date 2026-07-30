@@ -1,14 +1,21 @@
 // Lógica de Login (Admin / Funcionário)
 async function realizarLogin(email, senha) {
     try {
+        // Usamos .maybeSingle() para evitar erros de cabeçalho (406) do PostgREST
         const { data, error } = await supabaseClient
             .from('funcionarios')
             .select('*')
             .eq('email', email)
             .eq('senha', senha)
-            .single();
+            .maybeSingle();
 
-        if (error || !data) {
+        if (error) {
+            console.error('Erro na consulta do Supabase:', error);
+            alert('Erro ao tentar conectar com o banco de dados.');
+            return false;
+        }
+
+        if (!data) {
             alert('E-mail ou senha incorretos.');
             return false;
         }
@@ -16,15 +23,16 @@ async function realizarLogin(email, senha) {
         // Salva os dados da sessão atual no navegador
         localStorage.setItem('usuario_logado', JSON.stringify(data));
 
-        // Redireciona com base no e-mail master ou tipo de acesso
-        if (data.email === 'Moura@gmail.com') {
+        // Redireciona com base no tipo de acesso
+        if (data.email === 'admin@moura.com') {
             window.location.href = 'admin.html';
         } else {
             window.location.href = 'funcionario.html';
         }
+        
         return true;
     } catch (err) {
-        console.error('Erro no login:', err);
+        console.error('Erro inesperado no login:', err);
         alert('Erro ao tentar realizar login. Verifique sua conexão.');
         return false;
     }

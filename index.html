@@ -279,23 +279,23 @@
     <script src="js/supabase.js"></script>
     <script src="js/auth.js"></script>
 
-    <!-- Script de inicialização do evento de login -->
+    <!-- Script de escuta do formulário de login -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const formLogin = document.getElementById('form-login');
             if (formLogin) {
                 formLogin.addEventListener('submit', async function(e) {
-                    e.preventDefault();
+                    e.preventDefault(); // Impede o recarregamento padrão da página
 
                     const emailInput = document.getElementById('email').value.trim();
                     const senhaInput = document.getElementById('senha').value.trim();
 
                     if (!emailInput || !senhaInput) {
-                        alert('Por favor, preencha o e-mail e a senha.');
+                        alert('Preencha o e-mail e a senha.');
                         return;
                     }
 
-                    // Executa a função de autenticação do auth.js
+                    // Dispara a função de autenticação e redirecionamento do auth.js
                     await realizarLogin(emailInput, senhaInput);
                 });
             }
