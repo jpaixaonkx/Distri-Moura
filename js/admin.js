@@ -34,6 +34,16 @@ function gerarRelatorio() {
     alert('Relatório financeiro gerado com sucesso! Pronto para exportação.');
 }
 
+function fazerLogout() {
+    localStorage.removeItem('usuario_logado');
+    window.location.href = 'index.html';
+}
+
 window.addEventListener('DOMContentLoaded', () => {
+    // Garante que só quem está logado pode ver o painel
+    if (typeof verificarSessao === 'function') {
+        verificarSessao();
+    }
+    
     carregarDashboardAdmin();
 });

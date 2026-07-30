@@ -301,5 +301,28 @@
             }
         });
     </script>
+    <!-- Botão de Login Rápido para Testes -->
+<div style="margin-top: 15px; text-align: center;">
+    <button type="button" onclick="loginRapidoAdmin()" style="background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">
+        🚀 Entrar Rápido como Admin
+    </button>
+</div>
+
+<!-- Função de login rápido em JavaScript -->
+<script>
+    function loginRapidoAdmin() {
+        // Cria um objeto falso de usuário admin na sessão do navegador
+        const adminMock = {
+            id: 'admin-master-id',
+            nome: 'Administrador Master',
+            email: 'admin@moura.com',
+            cargo: 'admin'
+        };
+        
+        // Salva na sessão e redireciona instantaneamente para o painel
+        localStorage.setItem('usuario_logado', JSON.stringify(adminMock));
+        window.location.href = 'admin.html';
+    }
+</script>
 </body>
 </html>
