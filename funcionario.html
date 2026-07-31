@@ -157,6 +157,8 @@
             gap: 10px;
             font-weight: bold;
             font-size: 14px;
+            color: var(--amarelo-moura);
+            border: 1px solid rgba(255, 204, 0, 0.2);
         }
 
         /* Cards e Layout 3D */
@@ -164,6 +166,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
+            margin-bottom: 25px;
         }
 
         .card-3d {
@@ -219,6 +222,15 @@
             transform: translateY(6px);
             box-shadow: 0 0px 0 var(--amarelo-escuro), 0 4px 10px rgba(0,0,0,0.3);
         }
+        .btn-vermelho {
+            background: #ff4d4d;
+            color: #fff;
+            box-shadow: 0 6px 0 #cc0000, 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .btn-vermelho:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 #cc0000, 0 4px 10px rgba(0,0,0,0.3);
+        }
 
         .input-3d {
             width: 100%;
@@ -233,6 +245,7 @@
             font-size: 15px;
         }
         .input-3d:focus { outline: 2px solid var(--amarelo-moura); }
+        select.input-3d option { background: var(--bg-dark); color: var(--branco); }
 
         /* Tabelas */
         .table-container {
@@ -247,6 +260,11 @@
         .tabela-moderna th { padding: 12px; border-bottom: 2px solid var(--amarelo-moura); color: var(--amarelo-moura); font-size: 14px; }
         .tabela-moderna td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
         .badge-blue { background: var(--azul-primario); padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 11px;}
+
+        /* Status Caixa Badge */
+        .badge-status { padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 12px; display: inline-block; }
+        .status-aberto { background: #28a745; color: #fff; box-shadow: 0 0 10px rgba(40,167,69,0.5); }
+        .status-fechado { background: #dc3545; color: #fff; box-shadow: 0 0 10px rgba(220,53,69,0.5); }
 
         /* FAB - Botão Flutuante de Venda */
         .fab-3d {
@@ -273,7 +291,7 @@
             box-shadow: 0 0px 0 var(--amarelo-escuro), 0 4px 10px rgba(255, 204, 0, 0.3);
         }
 
-        /* Modal de Venda PDV */
+        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -327,7 +345,7 @@
 
     <div class="dashboard-layout">
         
-        <!-- Sidebar Reduzida para Colaborador -->
+        <!-- Sidebar do Colaborador -->
         <aside class="sidebar-3d" id="sidebar">
             <div class="sidebar-header">
                 <span style="font-weight: 700; color: var(--amarelo-moura); font-size: 18px;">Painel Caixa</span>
@@ -336,7 +354,7 @@
             
             <div class="menu-items">
                 <button class="menu-btn active" onclick="mostrarSecao('dashboard', this)">
-                    <i class="fas fa-cash-register"></i> <span>Caixa do Dia</span>
+                    <i class="fas fa-cash-register"></i> <span>Meu Caixa</span>
                 </button>
                 <button class="menu-btn" onclick="mostrarSecao('estoque', this)">
                     <i class="fas fa-boxes"></i> <span>Consultar Estoque</span>
@@ -356,29 +374,60 @@
                 <button class="btn-3d btn-amarelo" style="padding: 8px 12px;" onclick="toggleMobileMenu()">
                     <i class="fas fa-bars"></i> Menu
                 </button>
-                <div class="user-profile"><i class="fas fa-user-tie"></i> Colaborador</div>
+                <!-- Identificação Clara do Funcionário Logado -->
+                <div class="user-profile">
+                    <i class="fas fa-user-tie"></i> <span id="nome-usuario-logado">Carregando...</span>
+                </div>
             </div>
 
-            <!-- SEÇÃO 1: CAIXA DO DIA -->
+            <!-- SEÇÃO 1: CAIXA INDIVIDUAL -->
             <section id="dashboard" class="secao ativa">
                 <header class="secao-header">
-                    <h1>Resumo de Caixa</h1>
+                    <h1>Gerenciamento de Caixa Individual</h1>
+                    <div id="status-caixa-container">
+                        <span id="badge-status-caixa" class="badge-status status-fechado">CAIXA FECHADO</span>
+                    </div>
                 </header>
+
+                <!-- Ações de Abertura / Fechamento de Caixa -->
+                <div style="margin-bottom: 25px; display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button id="btn-abrir-caixa" class="btn-3d btn-amarelo" onclick="abrirModalAbrirCaixa()">
+                        <i class="fas fa-unlock"></i> Abrir Caixa
+                    </button>
+                    <button id="btn-fechar-caixa" class="btn-3d btn-vermelho" onclick="fecharCaixaFuncionario()" style="display: none;">
+                        <i class="fas fa-lock"></i> Fechar Caixa
+                    </button>
+                </div>
+
                 <div class="cards-grid">
                     <div class="card-3d">
-                        <div class="card-icon"><i class="fas fa-wallet"></i></div>
+                        <div class="card-icon"><i class="fas fa-calendar-day"></i></div>
                         <div class="card-info">
-                            <h3>Faturamento Atual do Caixa</h3>
+                            <h3>Vendas de Hoje (Seu Caixa)</h3>
                             <span class="valor" id="caixa-dia">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="card-3d">
+                        <div class="card-icon"><i class="fas fa-calendar-week"></i></div>
+                        <div class="card-info">
+                            <h3>Vendas da Semana</h3>
+                            <span class="valor" id="caixa-semana">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="card-3d">
+                        <div class="card-icon"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="card-info">
+                            <h3>Vendas do Mês</h3>
+                            <span class="valor" id="caixa-mes">R$ 0,00</span>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- SEÇÃO 2: ESTOQUE (Consulta) -->
+            <!-- SEÇÃO 2: ESTOQUE (Tempo Real) -->
             <section id="estoque" class="secao">
                 <header class="secao-header">
-                    <h1>Estoque Disponível</h1>
+                    <h1>Estoque em Tempo Real</h1>
                 </header>
                 <div class="table-container">
                     <table class="tabela-moderna">
@@ -387,11 +436,11 @@
                                 <th>ID</th>
                                 <th>Produto</th>
                                 <th>Qtd Disponível</th>
-                                <th>Preço Unit.</th>
+                                <th>Preço Venda</th>
                             </tr>
                         </thead>
                         <tbody id="lista-estoque-funcionario">
-                            <!-- Preenchido via Supabase -->
+                            <!-- Preenchido via Supabase em tempo real -->
                         </tbody>
                     </table>
                 </div>
@@ -402,6 +451,21 @@
         <button id="btn-pdv" class="fab-3d" title="Lançar Venda" onclick="abrirModalVenda()">
             <i class="fas fa-plus"></i>
         </button>
+
+        <!-- Modal de Abertura de Caixa -->
+        <div class="modal-overlay" id="modal-abrir-caixa">
+            <div class="modal-content">
+                <button class="modal-close" onclick="fecharModalAbrirCaixa()">&times;</button>
+                <h2 style="margin-top: 0; font-size: 20px; color: var(--amarelo-moura);">Abrir Caixa do Dia</h2>
+                <form onsubmit="confirmarAberturaCaixa(event)">
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Valor Inicial em Dinheiro (Troco)</label>
+                        <input type="number" step="0.01" id="valor-troco-inicial" class="input-3d" min="0" value="0.00" required style="margin-top: 5px;">
+                    </div>
+                    <button type="submit" class="btn-3d btn-amarelo" style="width: 100%; justify-content: center;">Iniciar Operação de Caixa</button>
+                </form>
+            </div>
+        </div>
 
         <!-- Modal de Nova Venda (PDV Integrado) -->
         <div class="modal-overlay" id="modal-venda">
@@ -439,6 +503,22 @@
     <script src="js/supabase.js"></script>
     
     <script>
+        // Variáveis de Sessão do Funcionário
+        let funcionarioLogado = null;
+
+        function verificarSessao() {
+            // Recupera o funcionário salvo no localStorage durante o login
+            const funcSalvo = localStorage.getItem('funcionario_logado');
+            if (funcSalvo) {
+                funcionarioLogado = JSON.parse(funcSalvo);
+                document.getElementById('nome-usuario-logado').innerText = funcionarioLogado.nome || funcionarioLogado.email;
+            } else {
+                // Caso não esteja logado, define um padrão temporário para testes ou redireciona
+                funcionarioLogado = { id: 1, nome: 'Colaborador Padrão', email: 'colaborador@moura.com' };
+                document.getElementById('nome-usuario-logado').innerText = funcionarioLogado.nome;
+            }
+        }
+
         function mostrarSecao(idSecao, elementoBotao) {
             document.querySelectorAll('.secao').forEach(secao => secao.classList.remove('ativa'));
             document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
@@ -456,6 +536,11 @@
         }
 
         function abrirModalVenda() {
+            const caixaAberto = localStorage.getItem(`caixa_aberto_${funcionarioLogado.id}`);
+            if (!caixaAberto || caixaAberto === 'false') {
+                alert('Você precisa abrir o seu caixa antes de realizar vendas!');
+                return;
+            }
             document.getElementById('modal-venda').style.display = 'flex';
             carregarProdutosSelect();
         }
@@ -464,13 +549,61 @@
             document.getElementById('modal-venda').style.display = 'none';
         }
 
+        function abrirModalAbrirCaixa() {
+            document.getElementById('modal-abrir-caixa').style.display = 'flex';
+        }
+
+        function fecharModalAbrirCaixa() {
+            document.getElementById('modal-abrir-caixa').style.display = 'none';
+        }
+
         function sairSistema() {
             if(confirm('Deseja realmente sair do painel?')) {
-                window.location.href = 'index.html'; // Altere para sua tela de login se necessário
+                localStorage.removeItem('funcionario_logado');
+                window.location.href = 'index.html';
             }
         }
 
-        // Integração com Supabase: Carregar Estoque na Tabela
+        // --- CONTROLE DE CAIXA ---
+        function confirmarAberturaCaixa(event) {
+            event.preventDefault();
+            const troco = document.getElementById('valor-troco-inicial').value;
+            localStorage.setItem(`caixa_aberto_${funcionarioLogado.id}`, 'true');
+            localStorage.setItem(`caixa_troco_${funcionarioLogado.id}`, troco);
+            
+            alert('Caixa aberto com sucesso!');
+            fecharModalAbrirCaixa();
+            atualizarStatusCaixaUI();
+        }
+
+        function fecharCaixaFuncionario() {
+            if(confirm('Tem certeza que deseja fechar o seu caixa e encerrar os lançamentos do dia?')) {
+                localStorage.setItem(`caixa_aberto_${funcionarioLogado.id}`, 'false');
+                alert('Caixa fechado com sucesso.');
+                atualizarStatusCaixaUI();
+            }
+        }
+
+        function atualizarStatusCaixaUI() {
+            const aberto = localStorage.getItem(`caixa_aberto_${funcionarioLogado.id}`) === 'true';
+            const badge = document.getElementById('badge-status-caixa');
+            const btnAbrir = document.getElementById('btn-abrir-caixa');
+            const btnFechar = document.getElementById('btn-fechar-caixa');
+
+            if (aberto) {
+                badge.className = 'badge-status status-aberto';
+                badge.innerText = 'CAIXA ABERTO';
+                btnAbrir.style.display = 'none';
+                btnFechar.style.display = 'flex';
+            } else {
+                badge.className = 'badge-status status-fechado';
+                badge.innerText = 'CAIXA FECHADO';
+                btnAbrir.style.display = 'flex';
+                btnFechar.style.display = 'none';
+            }
+        }
+
+        // --- ESTOQUE EM TEMPO REAL COM SUPABASE ---
         async function carregarEstoqueFuncionario() {
             try {
                 const { data, error } = await supabaseClient.from('estoque').select('*');
@@ -483,9 +616,9 @@
                         tbody.innerHTML += `
                             <tr>
                                 <td>#${item.id}</td>
-                                <td>${item.produto}</td>
-                                <td><span class="badge-blue">${item.quantidade} un</span></td>
-                                <td>R$ ${Number(item.preco).toFixed(2)}</td>
+                                <td>${item.nome_produto}</td>
+                                <td><span class="badge-blue">${item.quantidade_atual} un</span></td>
+                                <td>R$ ${Number(item.preco_venda).toFixed(2)}</td>
                             </tr>`;
                     });
                 } else {
@@ -496,6 +629,16 @@
             }
         }
 
+        // Assinar atualizações em tempo real do Supabase para o Estoque
+        function configurarRealtimeEstoque() {
+            supabaseClient
+                .channel('public:estoque')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque' }, payload => {
+                    carregarEstoqueFuncionario();
+                })
+                .subscribe();
+        }
+
         // Carregar produtos para o select do PDV
         async function carregarProdutosSelect() {
             try {
@@ -504,8 +647,8 @@
                 select.innerHTML = '<option value="">Selecione um produto</option>';
                 if (data) {
                     data.forEach(p => {
-                        if(p.quantidade > 0) {
-                            select.innerHTML += `<option value="${p.id}" data-preco="${p.preco}" data-qtdmax="${p.quantidade}">${p.produto} (Disponível: ${p.quantidade}) - R$ ${p.preco}</option>`;
+                        if(p.quantidade_atual > 0) {
+                            select.innerHTML += `<option value="${p.id}" data-preco="${p.preco_venda}" data-qtdmax="${p.quantidade_atual}">${p.nome_produto} (Disponível: ${p.quantidade_atual}) - R$ ${p.preco_venda}</option>`;
                         }
                     });
                 }
@@ -514,7 +657,7 @@
             }
         }
 
-        // Realizar Venda e Atualizar Caixa / Estoque
+        // --- REALIZAR VENDA (PDV) ---
         async function realizarVendaFuncionario(event) {
             event.preventDefault();
             const produtoId = document.getElementById('venda-produto').value;
@@ -536,42 +679,39 @@
 
                 if (prodError || !prodData) throw new Error('Produto não encontrado.');
 
-                if (prodData.quantidade < quantidadeVendida) {
-                    alert(`Estoque insuficiente! Apenas ${prodData.quantidade} unidades disponíveis.`);
+                if (prodData.quantidade_atual < quantidadeVendida) {
+                    alert(`Estoque insuficiente! Apenas ${prodData.quantidade_atual} unidades disponíveis.`);
                     return;
                 }
 
-                const valorTotal = prodData.preco * quantidadeVendida;
+                const valorTotal = Number(prodData.preco_venda) * quantidadeVendida;
 
-                // 2. Atualizar a quantidade no estoque do Supabase (Baixa)
-                const novaQuantidade = prodData.quantidade - quantidadeVendida;
+                // 2. Dar baixa no estoque no Supabase
+                const novaQuantidade = prodData.quantidade_atual - quantidadeVendida;
                 const { error: updateError } = await supabaseClient
                     .from('estoque')
-                    .update({ quantidade: novaQuantidade })
+                    .update({ quantidade_atual: novaQuantidade })
                     .eq('id', produtoId);
 
                 if (updateError) throw updateError;
 
-                // 3. Registrar a venda na tabela de vendas (se existir, ou salvar localmente/atualizar caixa)
-                // Se houver uma tabela "vendas" no seu Supabase:
+                // 3. Registrar a venda na tabela de vendas vinculando o funcionário logado
                 await supabaseClient.from('vendas').insert([{
-                    produto_id: produtoId,
-                    produto_nome: prodData.produto,
-                    quantidade: quantidadeVendida,
+                    funcionario_id: funcionarioLogado.id || null,
+                    funcionario_nome: funcionarioLogado.nome || 'Colaborador',
+                    forma_pagamento: formaPagamento,
+                    subtotal: valorTotal,
                     valor_total: valorTotal,
-                    pagamento: formaPagamento,
-                    data: new Date()
-                }]).catch(() => {
-                    // Caso a tabela 'vendas' não esteja criada ainda, apenas simula o faturamento em memória
-                });
+                    data_venda: new Date()
+                }]);
 
                 alert(`Venda realizada com sucesso! Total: R$ ${valorTotal.toFixed(2)}`);
                 fecharModalVenda();
                 document.getElementById('form-venda-func').reset();
                 
-                // Atualizar visualizações
+                // Atualizar caixas individuais
                 carregarEstoqueFuncionario();
-                atualizarCaixaDia();
+                atualizarValoresCaixa();
 
             } catch (err) {
                 console.error(err);
@@ -579,24 +719,66 @@
             }
         }
 
-        // Simular/Buscar faturamento do caixa do dia
-        async function atualizarCaixaDia() {
+        // --- ATUALIZAR VALORES DO CAIXA (DIA, SEMANA, MÊS) POR FUNCIONÁRIO ---
+        async function atualizarValoresCaixa() {
             try {
-                const { data, error } = await supabaseClient.from('vendas').select('valor_total');
+                // Busca vendas filtradas pelo nome ou ID do funcionário logado
+                const { data, error } = await supabaseClient
+                    .from('vendas')
+                    .select('valor_total, data_venda, funcionario_nome');
+
                 if(!error && data) {
-                    const totalDia = data.reduce((acc, curr) => acc + Number(curr.valor_total || 0), 0);
-                    document.getElementById('caixa-dia').innerText = `R$ ${totalDia.toFixed(2)}`;
+                    let hojeTotal = 0;
+                    let semanaTotal = 0;
+                    let mesTotal = 0;
+
+                    const agora = new Date();
+                    const hojeStr = agora.toISOString().split('T')[0];
+
+                    data.forEach(v => {
+                        // Filtra apenas as vendas feitas pelo funcionário logado atual para manter individualidade
+                        if (v.funcionario_nome && v.funcionario_nome.toLowerCase() !== (funcionarioLogado.nome || '').toLowerCase()) {
+                            return;
+                        }
+
+                        const dataVendaObj = new Date(v.data_venda);
+                        const vendaStr = dataVendaObj.toISOString().split('T')[0];
+                        const valor = Number(v.valor_total || 0);
+
+                        // Hoje
+                        if (vendaStr === hojeStr) {
+                            hojeTotal += valor;
+                        }
+
+                        // Mês atual
+                        if (dataVendaObj.getMonth() === agora.getMonth() && dataVendaObj.getFullYear() === agora.getFullYear()) {
+                            mesTotal += valor;
+                        }
+
+                        // Semana (últimos 7 dias)
+                        const diffTime = Math.abs(agora - dataVendaObj);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays <= 7) {
+                            semanaTotal += valor;
+                        }
+                    });
+
+                    document.getElementById('caixa-dia').innerText = `R$ ${hojeTotal.toFixed(2)}`;
+                    document.getElementById('caixa-semana').innerText = `R$ ${semanaTotal.toFixed(2)}`;
+                    document.getElementById('caixa-mes').innerText = `R$ ${mesTotal.toFixed(2)}`;
                 }
             } catch (e) {
-                // Se a tabela de vendas não existir ainda, exibe padrão
-                document.getElementById('caixa-dia').innerText = 'R$ 0,00';
+                console.error('Erro ao atualizar valores de caixa:', e);
             }
         }
 
         // Inicialização ao carregar a página
         window.addEventListener('DOMContentLoaded', () => {
+            verificarSessao();
+            atualizarStatusCaixaUI();
             carregarEstoqueFuncionario();
-            atualizarCaixaDia();
+            configurarRealtimeEstoque();
+            atualizarValoresCaixa();
         });
     </script>
 </body>
