@@ -237,6 +237,7 @@
         }
         .input-3d::placeholder { color: #888; }
         .input-3d:focus { outline: 2px solid var(--amarelo-moura); }
+        select.input-3d option { background: var(--bg-dark); color: var(--branco); }
 
         /* Tabelas e Formulários */
         .card-form, .table-container {
@@ -400,7 +401,7 @@
             <section id="financeiro" class="secao">
                 <header class="secao-header">
                     <h1>Controle Financeiro</h1>
-                    <button class="btn-3d btn-amarelo" onclick="gerarRelatorio()"><i class="fas fa-file-invoice"></i> Gerar Relatório</button>
+                    <button class="btn-3d btn-amarelo" onclick="carregarFinanceiro()"><i class="fas fa-sync-alt"></i> Atualizar</button>
                 </header>
                 <div class="cards-grid">
                     <div class="card-3d"><div class="card-info"><h3><i class="fas fa-qrcode"></i> PIX</h3><span class="valor" id="fin-pix">R$ 0,00</span></div></div>
@@ -418,9 +419,12 @@
                     <h3 style="margin-top: 0; font-size: 16px;">Cadastrar Novo Funcionário</h3>
                     <form id="form-funcionario" class="form-grid" onsubmit="cadastrarFuncionario(event)">
                         <input type="text" id="func-nome" class="input-3d" placeholder="Nome Completo" required>
-                        <input type="text" id="func-cpf" class="input-3d" placeholder="CPF" required>
                         <input type="email" id="func-email" class="input-3d" placeholder="E-mail de Acesso" required>
                         <input type="password" id="func-senha" class="input-3d" placeholder="Senha Temporária" required>
+                        <select id="func-cargo" class="input-3d" required>
+                            <option value="funcionario">Funcionário</option>
+                            <option value="admin">Administrador</option>
+                        </select>
                         <button type="submit" class="btn-3d btn-amarelo" style="grid-column: span 2; justify-content: center;">Cadastrar e Salvar no Banco</button>
                     </form>
                 </div>
@@ -431,8 +435,8 @@
                         <thead>
                             <tr>
                                 <th>Nome</th>
-                                <th>CPF</th>
                                 <th>E-mail</th>
+                                <th>Cargo</th>
                             </tr>
                         </thead>
                         <tbody id="lista-funcionarios">
@@ -455,8 +459,7 @@
                                 <th>ID</th>
                                 <th>Produto</th>
                                 <th>Quantidade</th>
-                                <th>Preço Unit.</th>
-                                <th>Ações</th>
+                                <th>Preço Venda</th>
                             </tr>
                         </thead>
                         <tbody id="lista-estoque">
@@ -512,11 +515,15 @@
                         <input type="text" id="prod-nome" class="input-3d" required style="margin-top: 5px;" placeholder="Ex: Galão de Água 20L">
                     </div>
                     <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; color: #a3b8cc;">Código de Barras (Opcional)</label>
+                        <input type="text" id="prod-codigo" class="input-3d" style="margin-top: 5px;" placeholder="Ex: 7891234567890">
+                    </div>
+                    <div style="margin-bottom: 15px;">
                         <label style="font-size: 13px; color: #a3b8cc;">Quantidade Inicial</label>
                         <input type="number" id="prod-qtd" class="input-3d" min="0" required style="margin-top: 5px;" placeholder="Ex: 50">
                     </div>
                     <div style="margin-bottom: 20px;">
-                        <label style="font-size: 13px; color: #a3b8cc;">Preço Unitário (R$)</label>
+                        <label style="font-size: 13px; color: #a3b8cc;">Preço de Venda (R$)</label>
                         <input type="number" step="0.01" id="prod-preco" class="input-3d" required style="margin-top: 5px;" placeholder="Ex: 8.00">
                     </div>
                     <button type="submit" class="btn-3d btn-amarelo" style="width: 100%; justify-content: center;">Salvar Produto no Estoque</button>
@@ -529,16 +536,17 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
-    <script src="js/admin.js"></script>
-    <script src="js/pdv.js"></script>
     
-    <!-- Scripts de Controle de Interface e Supabase -->
+    <!-- Scripts de Controle e Integração -->
     <script>
         function mostrarSecao(idSecao, elementoBotao) {
             document.querySelectorAll('.secao').forEach(secao => secao.classList.remove('ativa'));
             document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(idSecao).classList.add('ativa');
             elementoBotao.classList.add('active');
+
+            if (idSecao === 'dashboard') carregarDashboard();
+            if (idSecao === 'financeiro') carregarFinanceiro();
 
             if (window.innerWidth <= 768) {
                 toggleMobileMenu();
@@ -566,27 +574,27 @@
             document.getElementById('modal-produto').style.display = 'none';
         }
 
-        /* Integração Supabase - Funcionários */
+        /* 1. FUNCIONÁRIOS */
         async function cadastrarFuncionario(event) {
             event.preventDefault();
             const nome = document.getElementById('func-nome').value;
-            const cpf = document.getElementById('func-cpf').value;
             const email = document.getElementById('func-email').value;
             const senha = document.getElementById('func-senha').value;
+            const cargo = document.getElementById('func-cargo').value;
 
             try {
-                const { data, error } = await supabaseClient
+                const { error } = await supabaseClient
                     .from('funcionarios')
-                    .insert([{ nome, cpf, email, senha }]);
+                    .insert([{ nome, email, senha, cargo }]);
 
                 if (error) throw error;
 
-                alert('Funcionário cadastrado e salvo com sucesso!');
+                alert('Funcionário cadastrado com sucesso!');
                 document.getElementById('form-funcionario').reset();
                 carregarFuncionarios();
             } catch (err) {
                 console.error(err);
-                alert('Erro ao cadastrar funcionário. Verifique os campos ou conexão.');
+                alert('Erro ao cadastrar funcionário. O e-mail pode já estar cadastrado.');
             }
         }
 
@@ -599,7 +607,7 @@
                 tbody.innerHTML = '';
                 if (data && data.length > 0) {
                     data.forEach(f => {
-                        tbody.innerHTML += `<tr><td>${f.nome}</td><td>${f.cpf}</td><td>${f.email}</td></tr>`;
+                        tbody.innerHTML += `<tr><td>${f.nome}</td><td>${f.email}</td><td><span class="badge-blue">${f.cargo}</span></td></tr>`;
                     });
                 } else {
                     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#a3b8cc;">Nenhum funcionário cadastrado.</td></tr>`;
@@ -609,17 +617,18 @@
             }
         }
 
-        /* Funções de Estoque e Vendas (Ligadas ao Supabase) */
+        /* 2. ESTOQUE */
         async function salvarProduto(event) {
             event.preventDefault();
             const nome = document.getElementById('prod-nome').value;
+            const codigo = document.getElementById('prod-codigo').value || null;
             const quantidade = parseInt(document.getElementById('prod-qtd').value);
             const preco = parseFloat(document.getElementById('prod-preco').value);
 
             try {
                 const { error } = await supabaseClient
                     .from('estoque')
-                    .insert([{ produto: nome, quantidade, preco }]);
+                    .insert([{ nome_produto: nome, codigo_barras: codigo, quantidade_atual: quantidade, preco_venda: preco }]);
 
                 if (error) throw error;
 
@@ -645,16 +654,13 @@
                         tbody.innerHTML += `
                             <tr>
                                 <td>#${item.id}</td>
-                                <td>${item.produto}</td>
-                                <td><span class="badge-blue">${item.quantidade} un</span></td>
-                                <td>R$ ${Number(item.preco).toFixed(2)}</td>
-                                <td>
-                                    <button class="btn-3d" style="padding: 6px 10px; font-size: 12px; display:inline-block;"><i class="fas fa-pen"></i></button>
-                                </td>
+                                <td>${item.nome_produto}</td>
+                                <td><span class="badge-blue">${item.quantidade_atual} un</span></td>
+                                <td>R$ ${Number(item.preco_venda).toFixed(2)}</td>
                             </tr>`;
                     });
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#a3b8cc;">Nenhum produto no estoque.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#a3b8cc;">Nenhum produto no estoque.</td></tr>`;
                 }
             } catch (e) {
                 console.error('Erro ao carregar estoque:', e);
@@ -668,7 +674,9 @@
                 select.innerHTML = '<option value="">Selecione um produto</option>';
                 if (data) {
                     data.forEach(p => {
-                        select.innerHTML += `<option value="${p.id}" data-preco="${p.preco}">${p.produto} - R$ ${p.preco}</option>`;
+                        if (p.quantidade_atual > 0) {
+                            select.innerHTML += `<option value="${p.id}" data-preco="${p.preco_venda}" data-estoque="${p.quantidade_atual}">${p.nome_produto} (Disp: ${p.quantidade_atual}) - R$ ${p.preco_venda}</option>`;
+                        }
                     });
                 }
             } catch (e) {
@@ -676,21 +684,146 @@
             }
         }
 
+        /* 3. VENDAS (PDV) */
         async function salvarVenda(event) {
             event.preventDefault();
-            const produtoId = document.getElementById('venda-produto').value;
+            const produtoId = parseInt(document.getElementById('venda-produto').value);
             const quantidade = parseInt(document.getElementById('venda-qtd').value);
-            const pagamento = document.getElementById('venda-pagamento').value;
+            const formaPagamento = document.getElementById('venda-pagamento').value;
 
-            alert('Venda lançada com sucesso!');
-            fecharModalVenda();
-            document.getElementById('form-venda').reset();
+            const selectProd = document.getElementById('venda-produto');
+            const optionSel = selectProd.options[selectProd.selectedIndex];
+            const precoUnitario = parseFloat(optionSel.getAttribute('data-preco'));
+            const estoqueAtual = parseInt(optionSel.getAttribute('data-estoque'));
+
+            if (quantidade > estoqueAtual) {
+                alert('Quantidade solicitada maior do que o estoque disponível!');
+                return;
+            }
+
+            const subtotal = precoUnitario * quantidade;
+
+            try {
+                // 1. Inserir na tabela vendas
+                const { data: vendaData, error: vendaError } = await supabaseClient
+                    .from('vendas')
+                    .insert([{
+                        forma_pagamento: formaPagamento,
+                        subtotal: subtotal,
+                        valor_total: subtotal
+                    }])
+                    .select()
+                    .single();
+
+                if (vendaError) throw vendaError;
+
+                // 2. Inserir na tabela itens_venda
+                const { error: itemError } = await supabaseClient
+                    .from('itens_venda')
+                    .insert([{
+                        venda_id: vendaData.id,
+                        produto_id: produtoId,
+                        quantidade: quantidade,
+                        preco_unitario: precoUnitario,
+                        subtotal_item: subtotal
+                    }]);
+
+                if (itemError) throw itemError;
+
+                // 3. Dar baixa no estoque
+                const { error: estoqueError } = await supabaseClient
+                    .from('estoque')
+                    .update({ quantidade_atual: estoqueAtual - quantidade })
+                    .eq('id', produtoId);
+
+                if (estoqueError) throw estoqueError;
+
+                alert('Venda lançada com sucesso e estoque atualizado!');
+                fecharModalVenda();
+                document.getElementById('form-venda').reset();
+                carregarEstoque();
+                carregarDashboard();
+                carregarFinanceiro();
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao finalizar venda.');
+            }
+        }
+
+        /* 4. DASHBOARD E FINANCEIRO */
+        async function carregarDashboard() {
+            try {
+                const { data, error } = await supabaseClient.from('vendas').select('valor_total, data_venda');
+                if (error) throw error;
+
+                let hojeTotal = 0;
+                let semanaTotal = 0;
+                let mesTotal = 0;
+
+                const agora = new Date();
+                const hojeStr = agora.toISOString().split('T')[0];
+
+                data.forEach(v => {
+                    const dataVendaObj = new Date(v.data_venda);
+                    const vendaStr = dataVendaObj.toISOString().split('T')[0];
+                    const valor = Number(v.valor_total);
+
+                    // Vendas Hoje
+                    if (vendaStr === hojeStr) {
+                        hojeTotal += valor;
+                    }
+
+                    // Vendas Mês atual
+                    if (dataVendaObj.getMonth() === agora.getMonth() && dataVendaObj.getFullYear() === agora.getFullYear()) {
+                        mesTotal += valor;
+                    }
+
+                    // Vendas Semana (últimos 7 dias)
+                    const diffTime = Math.abs(agora - dataVendaObj);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays <= 7) {
+                        semanaTotal += valor;
+                    }
+                });
+
+                document.getElementById('vendas-hoje').innerText = `R$ ${hojeTotal.toFixed(2)}`;
+                document.getElementById('vendas-semana').innerText = `R$ ${semanaTotal.toFixed(2)}`;
+                document.getElementById('vendas-mes').innerText = `R$ ${mesTotal.toFixed(2)}`;
+            } catch (e) {
+                console.error('Erro ao carregar dashboard:', e);
+            }
+        }
+
+        async function carregarFinanceiro() {
+            try {
+                const { data, error } = await supabaseClient.from('vendas').select('valor_total, forma_pagamento');
+                if (error) throw error;
+
+                let pixTotal = 0;
+                let cartaoTotal = 0;
+                let dinheiroTotal = 0;
+
+                data.forEach(v => {
+                    const valor = Number(v.valor_total);
+                    if (v.forma_pagamento === 'pix') pixTotal += valor;
+                    else if (v.forma_pagamento === 'cartao') cartaoTotal += valor;
+                    else if (v.forma_pagamento === 'dinheiro') dinheiroTotal += valor;
+                });
+
+                document.getElementById('fin-pix').innerText = `R$ ${pixTotal.toFixed(2)}`;
+                document.getElementById('fin-cartao').innerText = `R$ ${cartaoTotal.toFixed(2)}`;
+                document.getElementById('fin-dinheiro').innerText = `R$ ${dinheiroTotal.toFixed(2)}`;
+            } catch (e) {
+                console.error('Erro ao carregar financeiro:', e);
+            }
         }
 
         // Carrega dados iniciais ao abrir a página
         window.addEventListener('DOMContentLoaded', () => {
             carregarFuncionarios();
             carregarEstoque();
+            carregarDashboard();
+            carregarFinanceiro();
         });
     </script>
 </body>
