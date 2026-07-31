@@ -503,17 +503,23 @@
     <script src="js/supabase.js"></script>
     
     <script>
-        // Variáveis de Sessão do Funcionário
         let funcionarioLogado = null;
 
+        // Inicialização automática ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarSessao();
+            atualizarStatusCaixaUI();
+            carregarEstoqueFuncionario();
+            configurarRealtimeEstoque();
+            atualizarValoresCaixa();
+        });
+
         function verificarSessao() {
-            // Recupera o funcionário salvo no localStorage durante o login
             const funcSalvo = localStorage.getItem('funcionario_logado');
             if (funcSalvo) {
                 funcionarioLogado = JSON.parse(funcSalvo);
                 document.getElementById('nome-usuario-logado').innerText = funcionarioLogado.nome || funcionarioLogado.email;
             } else {
-                // Caso não esteja logado, define um padrão temporário para testes ou redireciona
                 funcionarioLogado = { id: 1, nome: 'Colaborador Padrão', email: 'colaborador@moura.com' };
                 document.getElementById('nome-usuario-logado').innerText = funcionarioLogado.nome;
             }
@@ -585,6 +591,7 @@
         }
 
         function atualizarStatusCaixaUI() {
+            if (!funcionarioLogado) return;
             const aberto = localStorage.getItem(`caixa_aberto_${funcionarioLogado.id}`) === 'true';
             const badge = document.getElementById('badge-status-caixa');
             const btnAbrir = document.getElementById('btn-abrir-caixa');
@@ -629,7 +636,6 @@
             }
         }
 
-        // Assinar atualizações em tempo real do Supabase para o Estoque
         function configurarRealtimeEstoque() {
             supabaseClient
                 .channel('public:estoque')
@@ -639,7 +645,6 @@
                 .subscribe();
         }
 
-        // Carregar produtos para o select do PDV
         async function carregarProdutosSelect() {
             try {
                 const { data } = await supabaseClient.from('estoque').select('*');
@@ -670,7 +675,6 @@
             }
 
             try {
-                // 1. Buscar dados atuais do produto para checar estoque e calcular valor
                 const { data: prodData, error: prodError } = await supabaseClient
                     .from('estoque')
                     .select('*')
@@ -686,7 +690,6 @@
 
                 const valorTotal = Number(prodData.preco_venda) * quantidadeVendida;
 
-                // 2. Dar baixa no estoque no Supabase
                 const novaQuantidade = prodData.quantidade_atual - quantidadeVendida;
                 const { error: updateError } = await supabaseClient
                     .from('estoque')
@@ -695,21 +698,19 @@
 
                 if (updateError) throw updateError;
 
-                // 3. Registrar a venda na tabela de vendas vinculando o funcionário logado
                 await supabaseClient.from('vendas').insert([{
                     funcionario_id: funcionarioLogado.id || null,
                     funcionario_nome: funcionarioLogado.nome || 'Colaborador',
                     forma_pagamento: formaPagamento,
                     subtotal: valorTotal,
                     valor_total: valorTotal,
-                    data_venda: new Date()
+                    data_venda: new Date().toISOString()
                 }]);
 
                 alert(`Venda realizada com sucesso! Total: R$ ${valorTotal.toFixed(2)}`);
                 fecharModalVenda();
                 document.getElementById('form-venda-func').reset();
                 
-                // Atualizar caixas individuais
                 carregarEstoqueFuncionario();
                 atualizarValoresCaixa();
 
@@ -719,13 +720,12 @@
             }
         }
 
-        // --- ATUALIZAR VALORES DO CAIXA (DIA, SEMANA, MÊS) POR FUNCIONÁRIO ---
+        // --- ATUALIZAR VALORES DO CAIXA ---
         async function atualizarValoresCaixa() {
             try {
-                // Busca vendas filtradas pelo nome ou ID do funcionário logado
                 const { data, error } = await supabaseClient
                     .from('vendas')
-                    .select('valor_total, data_venda, funcionario_nome');
+                    .select('valor_total, data_venda, funcionario_nome, funcionario_id');
 
                 if(!error && data) {
                     let hojeTotal = 0;
@@ -736,8 +736,11 @@
                     const hojeStr = agora.toISOString().split('T')[0];
 
                     data.forEach(v => {
-                        // Filtra apenas as vendas feitas pelo funcionário logado atual para manter individualidade
-                        if (v.funcionario_nome && v.funcionario_nome.toLowerCase() !== (funcionarioLogado.nome || '').toLowerCase()) {
+                        // Filtro flexível por nome ou ID para garantir que as vendas do funcionário apareçam
+                        const mesmoNome = v.funcionario_nome && funcionarioLogado.nome && v.funcionario_nome.toLowerCase().trim() === funcionarioLogado.nome.toLowerCase().trim();
+                        const mesmoId = v.funcionario_id && funcionarioLogado.id && String(v.funcionario_id) === String(funcionarioLogado.id);
+                        
+                        if (!mesmoNome && !mesmoId) {
                             return;
                         }
 
@@ -745,17 +748,14 @@
                         const vendaStr = dataVendaObj.toISOString().split('T')[0];
                         const valor = Number(v.valor_total || 0);
 
-                        // Hoje
                         if (vendaStr === hojeStr) {
                             hojeTotal += valor;
                         }
 
-                        // Mês atual
                         if (dataVendaObj.getMonth() === agora.getMonth() && dataVendaObj.getFullYear() === agora.getFullYear()) {
                             mesTotal += valor;
                         }
 
-                        // Semana (últimos 7 dias)
                         const diffTime = Math.abs(agora - dataVendaObj);
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         if (diffDays <= 7) {
@@ -771,8 +771,7 @@
                 console.error('Erro ao atualizar valores de caixa:', e);
             }
         }
-
-        // Inicialização ao carregar a página
+    // Inicialização ao carregar a página
         window.addEventListener('DOMContentLoaded', () => {
             verificarSessao();
             atualizarStatusCaixaUI();
